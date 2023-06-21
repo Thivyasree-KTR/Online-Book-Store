@@ -1,0 +1,551 @@
+var userService = require('./userService');
+var {userModel,bks,adminModel,feedModel,cartt}=require('./userModel')
+var key = '123456789trytryrtyr';
+var encryptor = require('simple-encryptor')(key);
+var createUserControllerFn = async (req, res) => 
+{
+    try
+    {
+    console.log(req.body);
+    userDetails=req.body;
+    var name=userDetails.name;
+    var email=userDetails.email;
+    var phno=userDetails.phno;
+    var password=userDetails.password;
+  
+    //var encrypted = encryptor.encrypt(userDetails.password);
+    //var password =encrypted;
+    var data={
+      "name":name,
+      "email":email,
+      "phno":phno,
+      "password":password
+    }
+    const userr=await userModel.findOne({email:email});
+    if(userr)
+    {
+      res.send(false);
+    }
+    else
+    {
+      userModel.insertMany([data]);
+      console.log("inserted");
+      res.send(true);
+    }
+    
+     
+    }
+    catch(err)
+{
+    console.log(err);
+}
+}
+
+
+
+var loginUserControllerFn = async (req, res) => {
+    
+    try{
+        console.log("lakks");
+        const check=await userModel.findOne({email:req.body.email});
+        console.log("hrtht")
+        if(check)
+        {
+          console.log(check);
+          if(check.password==req.body.password){
+            console.log("Login success");
+          
+            
+            res.send({ "status": true, "message": req.body.email });
+            
+      
+          }
+          else{
+              res.send({ "status": false, "message": "Password Invalid" });
+          }
+        }
+        else
+        {
+          const checkk=await adminModel.findOne({username:req.body.email});
+         
+
+          if(checkk)
+          {
+            if(checkk.password==req.body.password){
+              console.log("Login success");
+            
+              
+              res.send({ "status": true, "message": 'admin',"mail":req.body.email });
+              
+        
+            }
+            else{
+                res.send({ "status": false, "message": "Password Invalid" });
+            }
+        }
+        res.send({ "status": false, "message": "Invalid details" });
+        }
+        
+      }  
+      catch{
+        //res.send({ "status": false, "message": "Invaliddd details" });
+      }
+}
+
+var isloggedin=async(req,res)=>{
+}
+
+var dispBook=async(req,res)=>{
+  try{
+    
+    const check=await bks.findOne({name:req.body.src});
+    console.log("check",check);
+    if(check){
+      console.log("Login success");
+     
+      
+      res.send({ "status": true, "message": check });
+      
+
+    }
+    else{
+        res.send({ "status": false, "message": "Password Invalid" });
+    }
+  }  
+  catch{
+    res.send({ "status": false, "message": "Invalid details" });
+  }
+}
+
+
+
+
+var addToCart=async(req,res)=>{
+  try{
+    console.log("Username:",req.body.un);
+    const check=await userModel.findOne({email:req.body.un});
+    console.log(check);
+    //console.log(check);
+    console.log("i",req.body.i);
+    console.log("n:",req.body.n);
+    const cc=await bks.findOne({name:req.body.i});
+    const ccq=cc.quantity;
+    if(ccq<1)
+    {
+      alert("Book not available");
+      res.send({"status":false,"message":"Book not available"});
+    }
+    else
+    {
+      const c2=await userModel.findOne({email:req.body.un,"cart.item":req.body.i});
+      if(c2)
+      {
+        const c3=await userModel.updateOne({email:req.body.un,"cart.item":req.body.i},{$inc:{"cart.$.q":1}})
+        const c4=await bks.updateOne({name:req.body.i},{$inc:{quantity:-1}})
+        console.log("c3:",c3);
+        console.log("c4:",c4);
+      }
+      else
+      {
+        const c5=await userModel.updateOne({email:req.body.un},{$push:{"cart":{item:req.body.i,q:1}}})
+        await bks.updateOne({name:req.body.i},{$inc:{quantity:-1}})
+        console.log("c5:",c5);
+      }
+      res.send({"status":true,"message":"added to cart"});
+    }
+    
+  /*  const c3=await userModel.updateOne({email:"pooja@gmail.com"},{$push:{"cart":{item:'B',q:1}}})
+    console.log(c3);*/
+
+
+
+    
+    /*console.log("check",check.cart==null);
+    console.log("check",check.cart==[]);
+    console.log("check",check.cart=="[]");
+    console.log("type:",typeof check.cart);
+    console.log("check:",check.cart,".");
+    const x=check.cart;
+    console.log("new",x,".");*/
+
+   // const oo=await userModel.find({"cart.item":'x'});
+    //console.log("oo:",oo);
+   // console.log(oo.cart===undefined);
+    
+  /*  const y=await userModel.findOne({email:'abc@gmail.com'});
+
+    console.log("y",y)
+    console.log("y",y.cart)
+   console.log("y1",y.cart==undefined);*/
+
+ /*  const yy=await userModel.find({email:'abc@gmail.com',"cart.item":'A Day of Fallen Night'},{cart:1});
+   console.log(yy);*/
+    
+  
+
+//    await userModel.updateOne({email:'abc@gmail.com'},{$push:{"cart":{item:'x',q:1}}});
+   // const ww=await userModel.find({email:'abc@gmail.com'},{cart:{$elemMatch:{item:'x'}}});
+  // const ww=await userModel.find({email:'abc@gmail.com'});
+    /*const ww=await userModel.aggregate([{$unwind:"$cart"},{$match:{"cart.item":'A Day of Fallen Night'}}])
+    console.log("ww:",ww);
+    console.log(ww.cart);*/
+    //await userModel.updateOne({email:'varsha@gmail.com'},{$push:{cart:{$each:[{item:'o',q:1}]}}})
+  //  const xx=await userModel.find({email:'abc@gmail.com',"cart.item":'o'});
+  //  console.log("xx:",xx);
+    //if(xx!==[]){console.log("yuu");}else{console.log("fevf");}
+    /*if(check){
+      
+      console.log("Cart:",check);
+   //   const check2=await userModel.findOne({email:req.body.un,cart:item:req.body.i});
+      const check3=await userModel.updateOne({email:'varsha@gmail.com'},{$push:{cart:{$each:[{item:'o',quantity:1}]}}});
+      //console.log("user:",req.body.un);
+     // console.log("item:",req.body.i);
+      
+      if(check.cart!=={})
+      {
+        console.log("hii");
+        const check2=await userModel.updateOne({email:'priya@gmail.com'},{$push:{cart:{item:'k',q:1}}})
+        //{$push:{cart:{$each:[{item:'N',q:1}]}}}
+        console.log("Added");
+        console.log("check2",check2);
+      }
+      else{
+        console.log("hey");
+        const check3=await userModel.findOne({email:req.body.un,"cart.item":req.body.i});
+        if(check3)
+        {
+          await userModel.updateOne({email:req.body.un,"cart.item":req.body.i},{$inc:{"cart.$.q":1}})
+        }
+        else{
+          await userModel.updateOne({email:req.body.un},{$push:{cart:{$each:[{item:req.body.i,q:1}]}}})
+        }
+      }
+      res.send({ "status": true, "message": check });
+      
+
+    }
+    else{
+        res.send({ "status": false, "message": "Password Invalid" });
+    }*/
+  }  
+  catch{
+    res.send({ "status": false, "message": "Invalid details" });
+  }
+}
+
+
+
+var displayCart=async(req,res)=>{
+  try{
+    const c5=await userModel.findOne({email:req.body.mail});
+    console.log("c5:",c5);
+    var quan=[];
+
+    var l=c5.cart.length;
+    var cartitems=[];
+    console.log("length",l);
+    for(var i=0;i<l;i++)
+    {
+      var bk=await bks.findOne({name:c5.cart[i].item});
+      cartitems[i]=bk;
+      quan[i]=c5.cart[i].q;
+      
+    }
+    console.log("cartitems:",cartitems);
+    res.send({"status":true,"message":cartitems,"quantities":quan});
+  }
+  catch{
+    console.log("error")
+  }
+}
+
+
+var updateCart=async(req,res)=>{
+  try{
+    console.log(req.body.mail);
+    var c=await userModel.updateOne({email:req.body.mail,"cart.item":req.body.name},{$set:{"cart.$.q":parseInt(req.body.newqq)}});
+    console.log("c",c);
+    res.send({"status":true,"message":"Updated!"});
+  }
+  catch{
+    res.send({"status":false,"message":"Not updated!"});
+  }
+}
+
+var delItem=async(req,res)=>{
+  try{
+    console.log("del",req.body.name);
+    var c=await userModel.updateOne({email:req.body.mail},{$pull:{cart:{item:req.body.name}}});
+    var xx=await bks.updateOne({name:req.body.name},{$inc:{quantity:req.body.qq}});
+    console.log("c:",c);
+    res.send({"status":true,"message":"Deleted!"});
+  }
+  catch{
+    res.send({"status":false,"message":"Not deleted!"});
+  }
+}
+
+
+var addBook=async(req,res)=>{
+  try{
+    console.log("n",req.body.name);
+    if(req.body.name==""){res.send({"status":false,"message":"Insufficient"})}
+    var check=await bks.findOne({name:req.body.name});
+    console.log("check",check);
+    console.log("check",check==null);
+    if(check==null) 
+    {
+      console.log("hrr");
+      var nnn=parseInt(req.body.price);
+      var qqq=parseInt(req.body.quantity);
+
+      console.log(nnn,qqq,req.body.imsrc,req.body.category,req.body.synleft,req.body.synright,req.body.aut);
+      var x=await bks.insertMany({name:req.body.name,author:req.body.author,price:nnn,quantity:qqq,publisher:req.body.publisher,ISBN:req.body.ISBN,imsrc:req.body.imsrc,category:req.body.category,synleft:req.body.synleft,synright:req.body.synright,aut:req.body.aut});
+      console.log("x:",x);
+      res.send({"status":true,"message":"Added!"});
+    }
+    else
+    {
+      res.send({"status":false,"message":"available"}) 
+    }
+    
+  }
+  catch{
+    res.send({"status":false,"message":"Not added!"});
+  }
+}
+
+var retrieveBook=async(req,res)=>{
+  try{
+    console.log("n",req.body.bk);
+    var checkk=await bks.find();
+    var check=await bks.aggregate([{$project:{name:{$toLower:"$name"}}}]);
+    if(check){
+    console.log("check",check);
+    var l=check.length;
+    for(var i=0;i<l;i++)
+    {
+      if(check[i].name==req.body.bk)
+      {
+        res.send({"status":true,"message":checkk[i]});
+      }
+    }
+    res.send({"status":false,"message":"Unavailable"})    }
+  }
+  catch{
+    /*res.send({"status":false,"message":"Error"});*/
+  }
+  
+}
+
+var updateBook=async(req,res)=>{
+  try{
+    var check=await bks.find({name:req.body.name});
+    if(check){
+    var cc=await bks.updateOne({name:req.body.name},{$set:{author:req.body.author,price:parseInt(req.body.price),quantity:parseInt(req.body.quantity),publisher:req.body.publisher,ISBN:parseInt(req.body.isbn),imsrc:req.body.image,category:req.body.category,synleft:req.body.syn1,synright:req.body.syn2,aut:req.body.ad}});
+    res.send({"status":true,"message":"Updated"});}
+  }
+  catch
+  {
+    res.send({"status":false,"message":"Not Updated"});    
+  }
+}
+
+var deleteBook=async(req,res)=>{
+  try{
+    var cc=await bks.deleteOne({name:req.body.name});
+    res.send({"status":true,"message":"Deleted"});
+  }
+  catch
+  {
+    res.send({"status":false,"message":"Not Deleted"});    
+  }
+}
+
+var fictionBooks=async(req,res)=>{
+  try{
+    var check=await bks.find({category:'Fiction'});
+    console.log("check:",check);
+    res.send({status:'true',"message":check});
+    
+  }
+  catch{
+    res.send({"status":false,"message":"Error"});    
+  }
+}
+
+var sendFeedback=async(req,res)=>{
+  try{
+    console.log("feed");
+    var check=await feedModel.insertMany({user:req.body.mail,book:req.body.name,comment:req.body.feed});
+    console.log("check",check);
+    res.send({"status":true,"message":"Added"});
+
+  }
+  catch{
+    res.send({"status":false,"message":"Error"});    
+  }
+}
+
+var searchBook=async(req,res)=>{
+  try{
+    var check=await bks.find({name:{$regex:req.body.w,$options:"i"}});
+    console.log("check:",check);
+    res.send({"status":true,"message":check});
+  }
+  catch{
+    res.send({"status":false,"message":"Error"});
+  }
+}
+
+var deleteCart=async(req,res)=>{
+  try{
+    console.log("mailll",req.body.mail);
+    var checkk=await userModel.findOne({email:req.body.mail});
+    console.log("checkk:::",checkk);
+    var iitem=checkk.cart;
+    var dd=Date();
+    console.log("iitem:",iitem,dd);
+    const cc=await cartt.insertMany({email:checkk.email,datebought:dd});
+    console.log("insertt cc:",cc,iitem.length);
+    for(var i=0;i<iitem.length;i++)
+    {
+      console.log("item",iitem[i].item,iitem[i].q);
+      var xxx=iitem[i].item;
+      var yyy=iitem[i].q;
+      var ccc=await cartt.updateOne({email:checkk.email,datebought:dd},{$push:{"cart":{item:xxx,q:parseInt(yyy)}}})
+      console.log("cc:::",ccc);
+    }
+    var check=await userModel.updateOne({email:req.body.mail},{$set:{cart:[]}});
+    console.log("delete",check);
+    if(check){
+      res.send({"status":true,"message":"Deleted"});
+    }
+    else 
+    {
+      res.send({"status":false,"message":"Not Deleted"});
+    }
+  }
+  catch{
+    res.send({"status":false,"message":"Error"});
+  }
+}
+
+
+
+
+var addToWishlist=async(req,res)=>{
+  try{
+    console.log("Username:",req.body.un);
+    const check=await userModel.findOne({email:req.body.un,"wishlist.item":req.body.i});
+    console.log(check);
+    console.log("i",req.body.i);
+    console.log("n:",req.body.n);
+    if(check)
+    {
+      console.log("The book is already in Wishlist!");
+      res.send({"status":true,"message":"added already"});
+    }
+    else
+    {
+      
+      const c5=await userModel.updateOne({email:req.body.un},{$push:{"wishlist":{item:req.body.i}}})
+      
+      res.send({"status":true,"message":"added to wishlist"});
+    }
+
+     
+  }  
+  catch{
+    res.send({ "status": false, "message": "Invalid details" });
+  }
+}
+
+var displayWish=async(req,res)=>{
+  try{
+    const c5=await userModel.findOne({email:req.body.mail});
+    console.log("c5:",c5);
+    var l=c5.wishlist.length;
+    var wishitems=[];
+    console.log("length",l);
+    for(var i=0;i<l;i++)
+    {
+      var bk=await bks.findOne({name:c5.wishlist[i].item});
+      wishitems[i]=bk;
+    
+    }
+
+    res.send({"status":true,"message":wishitems});
+  }
+  catch{
+    console.log("error");
+  }
+}
+
+
+var moveToCart=async(req,res)=>{
+  try{
+    const c5=await userModel.findOne({email:req.body.mail});
+    var cartitemss=c5.wishlist;
+    var l=cartitemss.length;
+    
+    for(var i=0;i<l;i++)
+    {
+      var checkk=await userModel.findOne({email:req.body.mail,"cart.item":cartitemss[i].item});
+      if(checkk){
+        var ccc=await userModel.updateOne({email:req.body.mail,"cart.item":cartitemss[i].item},{$inc:{"cart.$.q":1}});
+      }
+      else{
+        var ccc=await userModel.updateOne({email:req.body.mail},{$push:{"cart":{item:cartitemss[i].item,q:1}}});
+      }
+      
+    }
+  }
+  catch{
+    console.log("error");
+  }
+}
+
+
+
+
+var moveToCart1=async(req,res)=>{
+  try{
+    
+    var x=req.body.itemz;
+    const c5=await userModel.findOne({email:req.body.mail,"cart.item":x.name});
+    if(c5)
+    {
+      var ccc=await userModel.updateOne({email:req.body.mail,"cart.item":x.name},{$inc:{"cart.$.q":1}});
+    }
+    else
+    {
+      const c55=await userModel.updateOne({email:req.body.mail},{$push:{"cart":{item:x.name,q:1}}})
+    }
+  }
+  catch{
+    console.log("error");
+  }
+}
+
+var displayOrders=async(req,res)=>{
+  try{
+    var check=await cartt.find();
+    var l=check.length;
+    var items=[];
+    /*for(var i=0;i<l;i++)
+    {
+      items[i]=check.cart[i];
+    }
+    console.log("history:",items);,"items":items*/
+        console.log("history:",check.cart[0]);
+    res.send({"status":true,"message":check});
+  }
+  catch{
+    res.send({"status":false,"message":"Error"});
+  }
+}
+
+
+
+module.exports = { createUserControllerFn,loginUserControllerFn,dispBook,addToCart,displayCart,updateCart,delItem,addBook,retrieveBook,updateBook,deleteBook,fictionBooks,sendFeedback,searchBook,deleteCart,addToWishlist,displayWish,moveToCart,moveToCart1,displayOrders };

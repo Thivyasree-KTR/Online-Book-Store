@@ -1,0 +1,146 @@
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+const loginschema=new Schema({
+  name:{
+    type:String,
+    required:true
+  },
+  email:{
+    type:String,
+    required:true
+  },
+  phno:{
+    type:String,
+    required:true
+  },
+
+
+  password:{
+    type:String,
+    required:true
+  },
+  cart:{
+    type:Array,
+    item:{
+      type:String,
+      default:'A Day of Fallen Night'
+    },
+    q:{
+      type:Number,
+      default:1
+    }
+  },
+  wishlist:{
+    type:Array,
+    item:{
+      type:String,
+      default:'A Day of Fallen Night'
+    }
+  }
+});
+
+const carthistorySchema=new Schema({
+    email:{
+      type:String,
+      required:true
+    },
+    cart:{
+      type:Array,
+      item:{
+        type:String,
+        default:'A Day of Fallen Night'
+      },
+      q:{
+        type:Number,
+        default:1
+      }
+    },
+    datebought:{
+      type:String,
+      default:'12.05.2023'
+    }
+});
+
+
+const booksschema=new Schema({
+  name:{
+    type:String,
+    required:true
+  },
+  author:{
+    type:String,
+    required:true
+  },
+  price:{
+    type:Number,
+    required:true
+  },
+  quantity:{
+    type:Number,
+    required:true
+  },
+  publisher:{
+    type:String,
+    required:true
+  },
+  ISBN:{
+    type:String,
+    required:true
+  },
+  imsrc:{
+    type:String,
+    required:true
+  },
+  category:{
+    type:String,
+    required:true
+  },
+  synleft:{
+    type:String,
+    required:true
+  },
+  synright:{
+    type:String,
+    required:true
+  },
+  aut:{
+    type:String,
+    required:true
+  }
+
+});
+
+const adminSchema=new Schema({
+  username:{
+    type:String,
+    required:true
+  },
+  password:{
+    type:String,
+    required:true
+  }
+});
+
+const feedSchema=new Schema({
+  user:{
+    type:String,
+    required:true
+  },
+  book:{
+    type:String,
+    required:true
+  }, 
+  comment:{
+    type:String,
+    required:true
+  }
+});
+const userModel=mongoose.model('users', loginschema);
+const bks=mongoose.model('books',booksschema)
+const cartt=mongoose.model('carthistories',carthistorySchema)
+const adminModel=mongoose.model('admin',adminSchema);
+const feedModel=mongoose.model('feedback',feedSchema);
+
+module.exports={
+  userModel,bks,adminModel,feedModel,cartt}
